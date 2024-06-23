@@ -2,113 +2,101 @@
 
 import { useState } from 'react';
 
-interface CheckboxState {
-  CB1: boolean;
-  CB2: boolean;
-  CB3: boolean;
-  CB4: boolean;
-  CB5: boolean;
+interface Checkbox {
+  id: string;
+  label: string;
+  children?: Checkbox[];
 }
 
-const CheckboxGroup = () => {
-  const [checked, setChecked] = useState<CheckboxState>({
-    CB1: false,
-    CB2: false,
-    CB3: false,
-    CB4: false,
-    CB5: false,
+const checkboxes: Checkbox[] = [
+  {
+    id: 'CB1',
+    label: 'CB1',
+    children: [
+      {
+        id: 'CB2',
+        label: 'CB2',
+        children: [
+          { id: 'CB3', label: 'CB3' },
+          { id: 'CB4', label: 'CB4' }
+        ]
+      },
+      { id: 'CB5', label: 'CB5' }
+    ]
+  }
+];
+
+const initializeCheckedState = (checkboxes: Checkbox[], checkedState: any = {}) => {
+  checkboxes.forEach((checkbox) => {
+    checkedState[checkbox.id] = false;
+    if (checkbox.children) {
+      initializeCheckedState(checkbox.children, checkedState);
+    }
   });
+  return checkedState;
+};
 
-  const handleCheckboxChange = (name: keyof CheckboxState) => {
+const CheckboxGroup = () => {
+  const [checked, setChecked] = useState(initializeCheckedState(checkboxes));
+
+  const handleCheckboxChange = (id: string, children?: Checkbox[]) => {
     const newChecked = { ...checked };
+    const isChecked = !checked[id];
+    newChecked[id] = isChecked;
 
-    if (name === 'CB1') {
-      newChecked.CB1 = !checked.CB1;
-      newChecked.CB2 = newChecked.CB1;
-      newChecked.CB5 = newChecked.CB1;
-    } else if (name === 'CB2') {
-      newChecked.CB2 = !checked.CB2;
-      newChecked.CB3 = newChecked.CB2;
-      newChecked.CB4 = newChecked.CB2;
-    } else {
-      newChecked[name] = !checked[name];
+    if (children) {
+      children.forEach((child) => {
+        newChecked[child.id] = isChecked;
+        if (child.children) {
+          child.children.forEach((grandchild) => {
+            newChecked[grandchild.id] = isChecked;
+          });
+        }
+      });
     }
 
-    if (newChecked.CB2 && newChecked.CB5) {
-      newChecked.CB1 = true;
-    } else {
-      newChecked.CB1 = false;
+    // Check/uncheck parent logic
+    const updateParentChecks = () => {
+      newChecked['CB2'] = newChecked['CB3'] && newChecked['CB4'];
+      newChecked['CB1'] = newChecked['CB2'] && newChecked['CB5'];
+    };
+
+    updateParentChecks();
+
+    // Ensure parent checkboxes reflect the state of their children
+    if (id === 'CB2' || id === 'CB5') {
+      newChecked['CB1'] = newChecked['CB2'] && newChecked['CB5'];
     }
 
-    if (newChecked.CB3 && newChecked.CB4) {
-      newChecked.CB2 = true;
-    } else {
-      newChecked.CB2 = false;
+    if (id === 'CB3' || id === 'CB4') {
+      newChecked['CB2'] = newChecked['CB3'] && newChecked['CB4'];
     }
 
     setChecked(newChecked);
   };
 
-  return (
-    <div className="p-4">
-      <div>
+  const renderCheckboxes = (checkboxes: Checkbox[]) => {
+    return checkboxes.map((checkbox) => (
+      <div key={checkbox.id} className="ml-4">
         <label className="flex items-center space-x-2">
           <input
             type="checkbox"
-            checked={checked.CB1}
-            onChange={() => handleCheckboxChange('CB1')}
+            checked={checked[checkbox.id]}
+            onChange={() => handleCheckboxChange(checkbox.id, checkbox.children)}
             className="form-checkbox h-5 w-5 text-blue-600"
           />
-          <span>CB1</span>
+          <span>{checkbox.label}</span>
         </label>
+        {checkbox.children && renderCheckboxes(checkbox.children)}
       </div>
-      <div className="ml-4">
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={checked.CB2}
-            onChange={() => handleCheckboxChange('CB2')}
-            className="form-checkbox h-5 w-5 text-blue-600"
-          />
-          <span>CB2</span>
-        </label>
-        <div className="ml-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={checked.CB3}
-              onChange={() => handleCheckboxChange('CB3')}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-            <span>CB3</span>
-          </label>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={checked.CB4}
-              onChange={() => handleCheckboxChange('CB4')}
-              className="form-checkbox h-5 w-5 text-blue-600"
-            />
-            <span>CB4</span>
-          </label>
-        </div>
-      </div>
-      <div>
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={checked.CB5}
-            onChange={() => handleCheckboxChange('CB5')}
-            className="form-checkbox h-5 w-5 text-blue-600"
-          />
-          <span>CB5</span>
-        </label>
-      </div>
-    </div>
-  );
+    ));
+  };
+
+  return <div className="p-4">{renderCheckboxes(checkboxes)}</div>;
 };
 
 export default CheckboxGroup;
+
 
 
 
