@@ -2,3 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes enlarge-shrink {
+  0%, 100% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(2);
+  }
+}
+
+.animate-enlarge-shrink {
+  animation: enlarge-shrink 4s ease-in-out infinite;
+}

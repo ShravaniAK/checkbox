@@ -1,13 +1,16 @@
-import Image from 'next/image'
-import CheckboxGroup from './CheckBox';
+
+import Link from 'next/link';
 
 
 
 const Home = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <CheckboxGroup />
-    </div>
+   <>
+   <div className="container flex gap-10 justify-center items-center h-screen">
+    <Link href='/checkbox' >Checkbox</Link>
+    <Link href='/boxes' >Boxes</Link>
+   </div>
+   </>
   );
 };
 
